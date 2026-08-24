@@ -1,0 +1,31 @@
+name: 创建发行版本
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: 构建并发布静态包
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: 打包静态文件
+        run: |
+          tar -czf "offerflow-${GITHUB_REF_NAME}.tar.gz" -C dist .
+          cd dist && zip -r "../offerflow-${GITHUB_REF_NAME}.zip" .
+      - name: 创建 GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" "offerflow-${GITHUB_REF_NAME}.tar.gz" "offerflow-${GITHUB_REF_NAME}.zip" --generate-notes

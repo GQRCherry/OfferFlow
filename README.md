@@ -23,6 +23,7 @@
 - 普通数据 JSON 备份与恢复、投递 CSV 导出
 - 跟随系统、浅色和深色三种主题
 - 使用 Hash Router，可直接部署到 GitHub Pages 等静态托管平台
+- 推送 `v*` 标签时自动生成可离线托管的 ZIP 与 tar.gz 发行包
 
 ## GitHub Pages 使用入口
 
