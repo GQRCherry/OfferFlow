@@ -7,20 +7,14 @@ import { Badge, Button, EmptyState } from '../../components/ui'
 import { currentStage, relativeDay } from '../../lib/utils'
 import type { RecruitmentEvent } from '../../types/domain'
 import { CalendarPanel, EventDetailModal, EventModal, eventTypeLabels } from '../events/EventUI'
+import { calculateDashboardStats } from './service'
 
 export function DashboardPage() {
   const { currentCycle, cyclePositions, cycleApplications, cycleEvents, companies, positions } = useApp()
   const [eventOpen, setEventOpen] = useState(false)
   const [initialDate, setInitialDate] = useState<string>()
   const [selectedEvent, setSelectedEvent] = useState<RecruitmentEvent>()
-  const stats = useMemo(() => ({
-    positions: cyclePositions.length,
-    applied: cycleApplications.filter((item) => currentStage(item)?.category !== 'todo').length,
-    pre: cycleApplications.filter((item) => currentStage(item)?.category === 'pre_interview' && item.result === 'active').length,
-    interview: cycleApplications.filter((item) => currentStage(item)?.category === 'interview' && item.result === 'active').length,
-    offer: cycleApplications.filter((item) => currentStage(item)?.category === 'offer' && item.result === 'active').length,
-    accepted: cycleApplications.filter((item) => item.result === 'offer_accepted').length,
-  }), [cyclePositions, cycleApplications])
+  const stats = useMemo(() => calculateDashboardStats(cyclePositions, cycleApplications), [cyclePositions, cycleApplications])
   const today = startOfDay(new Date())
   const weekStart = startOfWeek(today, { weekStartsOn: 1 })
   const weekEnd = endOfWeek(today, { weekStartsOn: 1 })

@@ -5,6 +5,7 @@ import { useApp } from '../../app/AppContext'
 import { Button, Field, IconButton, Input, Modal, Select } from '../../components/ui'
 import type { RecruitmentCycle } from '../../types/domain'
 import { MarkdownEditor } from '../../components/Markdown'
+import { ImportDataControl } from '../data-transfer/ImportDataControl'
 
 const initial = { name: '', type: 'autumn' as NonNullable<RecruitmentCycle['type']>, startDate: '', endDate: '', notes: '' }
 
@@ -44,7 +45,7 @@ export function Onboarding() {
       <p className="eyebrow">本地优先的求职工作台</p>
       <h1>把招聘季，变成一条清晰的路径。</h1>
       <p>岗位、投递、流程、日程和面经都保存在你的浏览器本地。先创建一个招聘季，开始建立自己的求职工作台。</p>
-      <Button onClick={() => setOpen(true)}><Plus size={17} /> 创建第一个招聘季</Button>
+      <div className="onboarding-actions"><Button onClick={() => setOpen(true)}><Plus size={17} />创建第一个招聘季</Button><ImportDataControl label="从备份恢复" /></div>
       <div className="privacy-note">无需注册 · 无云数据库 · 普通数据可随时导出</div>
     </section>
     <CycleModal open={open} onClose={() => setOpen(false)} />

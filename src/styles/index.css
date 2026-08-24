@@ -491,3 +491,4 @@ td > span { margin-top: 3px; color: var(--muted); font-size: 11px; }
 .detail-list a { color: var(--accent); text-decoration: underline; }
 .attention-list button { width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 12px 3px; border: 0; border-bottom: 1px solid var(--border); color: inherit; background: transparent; text-align: left; cursor: pointer; }
 .attention-dot.urgent { background: var(--danger); }
+.onboarding-actions { display: flex; align-items: center; justify-content: center; gap: 9px; flex-wrap: wrap; }

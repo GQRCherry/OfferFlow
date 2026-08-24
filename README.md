@@ -51,6 +51,7 @@ npm run dev
 ```bash
 npm ci
 npm test
+npm run test:e2e
 npm run build
 ```
 
@@ -152,10 +153,13 @@ src/
 
 ```bash
 npm test
+npm run test:e2e
 npm run build
 ```
 
-测试覆盖默认及自定义流程、历史快照、流程复制、结构化 JD 校验、敏感数据过滤、导入导出往返、招聘季隔离、搜索隐私边界和关键首次使用流程。
+浏览器 E2E 首次运行前需要安装 Chromium：`npx playwright install chromium`。
+
+Vitest 覆盖默认及自定义流程、历史快照、流程复制、结构化 JD 校验、敏感数据过滤、导入导出往返、招聘季隔离和搜索隐私边界。Playwright 覆盖 PRD 指定的首次使用、招聘季隔离、创建投递、自定义流程、笔试日程、官网密码、普通导出、导入恢复和 GitHub Pages 静态路由场景。
 
 ## 参与贡献与安全问题
 
