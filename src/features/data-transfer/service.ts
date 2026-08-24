@@ -1,6 +1,6 @@
 import { format } from 'date-fns'
 import { db } from '../../db/schema'
-import { APP_VERSION, EXPORT_SCHEMA_VERSION } from '../../lib/constants'
+import { APPLICATION_RESULT_LABELS, APPLY_CHANNEL_LABELS, APP_VERSION, EXPORT_SCHEMA_VERSION, PIPELINE_CATEGORY_LABELS } from '../../lib/constants'
 import { downloadBlob, nowIso } from '../../lib/utils'
 import type { ExportBundle } from '../../types/domain'
 import { exportBundleSchema } from './schema'
@@ -100,7 +100,7 @@ export async function exportApplicationsCSV(cycleId?: string) {
     const position = positions.find((item) => item.id === application.positionId)
     const company = companies.find((item) => item.id === position?.companyId)
     const stage = application.pipeline.find((item) => item.id === application.currentStageId)
-    return [cycle?.name, company?.name, position?.title, position?.locations.join(' / '), stage?.name, stage?.category, application.result, application.appliedAt, application.applyChannel === 'other' ? application.applyChannelText : application.applyChannel, position?.jobUrl, position?.officialUrl, position?.consultUrl]
+    return [cycle?.name, company?.name, position?.title, position?.locations.join(' / '), stage?.name, stage ? PIPELINE_CATEGORY_LABELS[stage.category] : '', APPLICATION_RESULT_LABELS[application.result], application.appliedAt, application.applyChannel === 'other' ? application.applyChannelText : application.applyChannel ? APPLY_CHANNEL_LABELS[application.applyChannel] : '', position?.jobUrl, position?.officialUrl, position?.consultUrl]
   })
   const headers = ['招聘季', '公司', '岗位', '地点', '当前 Stage', 'Category', 'Result', '投递时间', '投递渠道', '岗位链接', '官网链接', '咨询链接']
   const csv = `\uFEFF${[headers, ...rows].map((row) => row.map(csvCell).join(',')).join('\n')}`

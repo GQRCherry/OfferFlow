@@ -331,6 +331,8 @@ td > span { margin-top: 3px; color: var(--muted); font-size: 11px; }
 .pipeline-editor { display: grid; gap: 7px; }
 .pipeline-editor > div { display: grid; grid-template-columns: 30px 1fr 160px 34px 34px 34px; gap: 6px; align-items: center; padding: 6px; border: 1px solid var(--border); border-radius: 9px; }
 .pipeline-editor > div.current { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 30%, var(--border)); }
+.pipeline-drag-handle { width: 28px; height: 32px; display: grid; place-items: center; border: 0; color: var(--muted); background: transparent; cursor: grab; touch-action: none; }
+.pipeline-editor > div.dragging { position: relative; z-index: 4; box-shadow: var(--shadow); }
 .stage-order { color: var(--muted); text-align: center; font-size: 10px; }
 .event-list { display: grid; gap: 6px; }
 .event-list > button { display: flex; align-items: center; gap: 11px; padding: 11px; text-align: left; border: 1px solid var(--border); border-radius: 10px; color: inherit; background: var(--surface-2); cursor: pointer; }
@@ -478,3 +480,14 @@ td > span { margin-top: 3px; color: var(--muted); font-size: 11px; }
 .pagination > div { display: flex; align-items: center; gap: 8px; }
 .load-more { margin-top: 12px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface); }
 .method-options { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
+.company-notes, .event-notes { margin-top: 14px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); }
+.ai-disclosure { margin: -6px 0 9px; color: var(--warning); font-size: 10px; }
+.interview-filters { flex-wrap: wrap; }
+.interview-filters .search-box { flex-basis: 280px; }
+.interview-filters .input { flex: 1 1 130px; }
+.event-context { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.event-context strong { font-size: 14px; }
+.event-context span { color: var(--muted); font-size: 12px; }
+.detail-list a { color: var(--accent); text-decoration: underline; }
+.attention-list button { width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 12px 3px; border: 0; border-bottom: 1px solid var(--border); color: inherit; background: transparent; text-align: left; cursor: pointer; }
+.attention-dot.urgent { background: var(--danger); }

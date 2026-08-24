@@ -15,7 +15,8 @@ const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then
 function LoadingPage() { return <div className="route-loading"><span /><p>正在加载本地数据…</p></div> }
 
 export function App() {
-  const { cycles } = useApp()
+  const { ready, cycles } = useApp()
+  if (!ready) return <LoadingPage />
   if (!cycles.length) return <Onboarding />
   return <Layout><Suspense fallback={<LoadingPage />}><Routes><Route path="/dashboard" element={<DashboardPage />} /><Route path="/applications" element={<ApplicationsPage />} /><Route path="/applications/:id" element={<ApplicationDetailPage />} /><Route path="/positions" element={<PositionsPage />} /><Route path="/interviews" element={<InterviewsPage />} /><Route path="/data" element={<DataPage />} /><Route path="/settings" element={<SettingsPage />} /><Route path="*" element={<Navigate to="/dashboard" replace />} /></Routes></Suspense></Layout>
 }

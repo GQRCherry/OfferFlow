@@ -1,12 +1,11 @@
-import { useState } from 'react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeSanitize from 'rehype-sanitize'
+import { lazy, Suspense, useState } from 'react'
 import { Button, Textarea } from './ui'
+
+const MarkdownRenderer = lazy(() => import('./MarkdownRenderer'))
 
 export function MarkdownView({ value, empty = '暂无内容' }: { value?: string; empty?: string }) {
   if (!value?.trim()) return <p className="muted">{empty}</p>
-  return <div className="markdown"><ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>{value}</ReactMarkdown></div>
+  return <Suspense fallback={<p className="muted">正在加载预览…</p>}><MarkdownRenderer value={value} /></Suspense>
 }
 
 export function MarkdownEditor({ value, onChange, rows = 8 }: { value: string; onChange: (value: string) => void; rows?: number }) {

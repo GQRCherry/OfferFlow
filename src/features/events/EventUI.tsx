@@ -1,12 +1,16 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek, subMonths } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Clock, MapPin, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Clock, ExternalLink, MapPin, Plus, Video } from 'lucide-react'
 import { useApp } from '../../app/AppContext'
-import { Button, Field, Input, Modal, Select, Textarea } from '../../components/ui'
+import { useNavigate } from 'react-router-dom'
+import { Button, Field, Input, Modal, Select } from '../../components/ui'
 
 import type { RecruitmentEvent, RecruitmentEventType } from '../../types/domain'
 import { completeEvent, deleteEvent, saveEvent } from './service'
+import { MarkdownEditor, MarkdownView } from '../../components/Markdown'
+import { InterviewModal } from '../interviews/InterviewUI'
+import { safeExternalUrl } from '../../lib/utils'
 
 const typeOptions: Array<[RecruitmentEventType, string]> = [['assessment', '测评'], ['written_test', '笔试'], ['interview', '面试'], ['hr_interview', 'HR 面'], ['offer', 'Offer 沟通'], ['deadline', '截止时间'], ['follow_up', '跟进'], ['custom', '自定义']]
 export const eventTypeLabels = Object.fromEntries(typeOptions) as Record<RecruitmentEventType, string>
@@ -34,7 +38,7 @@ export function EventModal({ open, onClose, applicationId, positionId, initialDa
       <label className="checkbox"><input type="checkbox" checked={form.allDay} onChange={(e) => setForm({ ...form, allDay: e.target.checked })} />全天事项</label>
       {!form.allDay && <div className="form-grid"><Field label="开始时间"><Input name="time" type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} /></Field><Field label="结束时间"><Input name="endTime" type="time" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} /></Field></div>}
       <div className="form-grid"><Field label="会议链接"><Input type="url" value={form.meetingUrl} onChange={(e) => setForm({ ...form, meetingUrl: e.target.value })} /></Field><Field label="地点"><Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} /></Field></div>
-      <Field label="备注"><Textarea rows={4} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></Field>
+      <Field label="备注"><MarkdownEditor value={form.notes} onChange={(notes) => setForm({ ...form, notes })} rows={5} /></Field>
       <div className="modal-actions"><Button type="button" variant="ghost" onClick={onClose}>取消</Button><Button>保存日程</Button></div>
     </form>
   </Modal>
@@ -44,7 +48,7 @@ export function CalendarPanel({ events, onCreate, onSelect }: { events: Recruitm
   const [month, setMonth] = useState(startOfMonth(new Date()))
   const days = useMemo(() => eachDayOfInterval({ start: startOfWeek(startOfMonth(month), { weekStartsOn: 1 }), end: endOfWeek(endOfMonth(month), { weekStartsOn: 1 }) }), [month])
   return <section className="calendar-panel">
-    <header><div><p className="eyebrow">月度日历</p><h2>{format(month, 'yyyy年 M月', { locale: zhCN })}</h2></div><div><Button size="sm" variant="ghost" onClick={() => setMonth(subMonths(month, 1))}><ChevronLeft size={16} /></Button><Button size="sm" variant="secondary" onClick={() => setMonth(startOfMonth(new Date()))}>今天</Button><Button size="sm" variant="ghost" onClick={() => setMonth(addMonths(month, 1))}><ChevronRight size={16} /></Button></div></header>
+    <header><div><p className="eyebrow">月度日历</p><h2>{format(month, 'yyyy年 M月', { locale: zhCN })}</h2></div><div><Button aria-label="上个月" size="sm" variant="ghost" onClick={() => setMonth(subMonths(month, 1))}><ChevronLeft size={16} /></Button><Button size="sm" variant="secondary" onClick={() => setMonth(startOfMonth(new Date()))}>今天</Button><Button aria-label="下个月" size="sm" variant="ghost" onClick={() => setMonth(addMonths(month, 1))}><ChevronRight size={16} /></Button></div></header>
     <div className="calendar-weekdays">{['一', '二', '三', '四', '五', '六', '日'].map((day) => <span key={day}>周{day}</span>)}</div>
     <div className="calendar-grid">{days.map((day) => {
       const dayEvents = events.filter((event) => event.startAt && isSameDay(parseISO(event.startAt), day)).sort((a, b) => (a.startAt ?? '').localeCompare(b.startAt ?? ''))
@@ -57,15 +61,29 @@ export function CalendarPanel({ events, onCreate, onSelect }: { events: Recruitm
 }
 
 export function EventDetailModal({ event, onClose }: { event?: RecruitmentEvent; onClose: () => void }) {
-  const { toast } = useApp()
+  const { cycles, applications, positions, companies, toast } = useApp()
+  const navigate = useNavigate()
   const [editing, setEditing] = useState(false)
+  const [interviewOpen, setInterviewOpen] = useState(false)
   if (!event) return null
+  const application = applications.find((item) => item.id === event.applicationId)
+  const position = positions.find((item) => item.id === (event.positionId ?? application?.positionId))
+  const company = companies.find((item) => item.id === position?.companyId)
+  const readonly = cycles.find((cycle) => cycle.id === event.cycleId)?.status === 'archived'
+  const modeLabel = event.mode ? ({ online: '线上', offline: '线下', phone: '电话', unknown: '待定' } as const)[event.mode] : undefined
   return <>
     <Modal open={!editing} onClose={onClose} title={event.title} subtitle={eventTypeLabels[event.type]}>
-      <div className="detail-list"><div><Clock size={17} /><span>{event.allDay ? `${event.startAt?.slice(0, 10)} · 全天` : event.startAt?.replace('T', ' ').slice(0, 16) ?? '未设置时间'}</span></div>{event.location && <div><MapPin size={17} /><span>{event.location}</span></div>}</div>
-      {event.notes && <p className="pre-wrap">{event.notes}</p>}
-      <div className="modal-actions"><Button variant="danger" onClick={async () => { if (confirm('确认删除这个日程？')) { await deleteEvent(event); toast('日程已删除'); onClose() } }}>删除</Button><Button variant="secondary" onClick={() => setEditing(true)}>编辑</Button>{!event.completed && <Button onClick={async () => { await completeEvent(event); toast('已标记完成'); onClose() }}>标记完成</Button>}</div>
+      <div className="event-context">{company && <strong>{company.name}</strong>}{position && <span>{position.title}</span>}</div>
+      <div className="detail-list">
+        <div><Clock size={17} /><span>{event.allDay ? `${event.startAt?.slice(0, 10)} · 全天` : event.startAt?.replace('T', ' ').slice(0, 16) ?? '未设置时间'}</span></div>
+        {modeLabel && <div><Video size={17} /><span>{modeLabel}</span></div>}
+        {event.location && <div><MapPin size={17} /><span>{event.location}</span></div>}
+        {safeExternalUrl(event.meetingUrl) && <div><ExternalLink size={17} /><a href={event.meetingUrl} target="_blank" rel="noopener noreferrer">打开会议链接</a></div>}
+      </div>
+      {event.notes && <div className="event-notes"><MarkdownView value={event.notes} /></div>}
+      <div className="modal-actions"><Button disabled={readonly} variant="danger" onClick={async () => { if (confirm('确认删除这个日程？')) { await deleteEvent(event); toast('日程已删除'); onClose() } }}>删除</Button><Button disabled={readonly} variant="secondary" onClick={() => setEditing(true)}>编辑</Button>{application && <Button variant="secondary" onClick={() => { navigate(`/applications/${application.id}`); onClose() }}>进入投递</Button>}{application && ['interview', 'hr_interview'].includes(event.type) && <Button disabled={readonly} variant="secondary" onClick={() => setInterviewOpen(true)}>记录面经</Button>}{!event.completed && <Button disabled={readonly} onClick={async () => { await completeEvent(event); toast('已标记完成'); onClose() }}>标记完成</Button>}</div>
     </Modal>
+    {application && <InterviewModal open={interviewOpen} application={application} eventId={event.id} stageName={event.title} onClose={() => setInterviewOpen(false)} />}
     <EventModal open={editing} onClose={() => { setEditing(false); onClose() }} edit={event} />
   </>
 }

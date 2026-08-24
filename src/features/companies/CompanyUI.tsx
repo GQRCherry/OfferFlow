@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Building2, Copy, ExternalLink, Eye, EyeOff, KeyRound, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useApp } from '../../app/AppContext'
 import { Badge, Button, Field, IconButton, Input, Modal, Textarea } from '../../components/ui'
+import { MarkdownEditor, MarkdownView } from '../../components/Markdown'
 import { createCompany, deleteCompanySafe, updateCompany } from '../../db/repositories'
 import { copyText, findSimilarCompanyNames, maskSensitiveValue, safeExternalUrl } from '../../lib/utils'
 import { readCareerAccountSecret } from '../../security/secrets'
@@ -37,7 +38,7 @@ export function CompanyModal({ open, onClose, company: initialCompany }: { open:
       <Field label="公司名称"><Input autoFocus required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></Field>
       <Field label="公司官网"><Input type="url" value={form.websiteUrl} onChange={(event) => setForm({ ...form, websiteUrl: event.target.value })} placeholder="https://" /></Field>
       <Field label="招聘官网"><Input type="url" value={form.careerUrl} onChange={(event) => setForm({ ...form, careerUrl: event.target.value })} placeholder="https://" /></Field>
-      <Field label="备注"><Textarea rows={5} value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} /></Field>
+      <Field label="备注"><MarkdownEditor value={form.notes} onChange={(notes) => setForm({ ...form, notes })} rows={5} /></Field>
       <div className="modal-actions"><Button type="button" variant="ghost" onClick={onClose}>取消</Button><Button>保存</Button></div>
     </form>
   </Modal>
@@ -116,6 +117,7 @@ export function CompanyManager({ open, onClose }: { open: boolean; onClose: () =
     <Modal wide open={open} onClose={onClose} title="公司与招聘官网账号" subtitle="公司可跨招聘季复用，密码与普通业务数据分开保存。">
       <div className="split-manager"><aside><Button className="full-width" variant="secondary" onClick={() => { setSelectedId(undefined); setCompanyModal(true) }}><Plus size={16} />新增公司</Button>{companies.map((company) => <button className={selectedId === company.id ? 'active' : ''} key={company.id} onClick={() => { setSelectedId(company.id); setAccountForm(false); setEditAccount(undefined) }}><Building2 size={16} />{company.name}</button>)}</aside><section>
         {!selected ? <div className="empty-mini">选择或新增一家公司</div> : <><header className="detail-header"><div><p className="eyebrow">公司信息</p><h2>{selected.name}</h2><p>{selected.careerUrl || selected.websiteUrl || '尚未填写官网'}</p></div><div><Button size="sm" variant="secondary" onClick={() => setCompanyModal(true)}>编辑</Button><Button size="sm" variant="danger" onClick={async () => { if (confirm(`确认删除“${selected.name}”？存在岗位时将拒绝删除。`)) try { await deleteCompanySafe(selected.id); setSelectedId(undefined); toast('公司已删除') } catch (error) { toast(error instanceof Error ? error.message : '删除失败', 'error') } }}>删除</Button></div></header>
+          {selected.notes && <div className="company-notes"><MarkdownView value={selected.notes} /></div>}
           <div className="section-title"><div><h3>招聘官网账号</h3><p>密码默认遮罩，刷新页面后会重新隐藏。</p></div><Button size="sm" onClick={() => { setEditAccount(undefined); setAccountForm(true) }}><Plus size={15} />添加账号</Button></div>
           {accountForm ? <AccountForm companyId={selected.id} edit={editAccount} onDone={() => { setAccountForm(false); setEditAccount(undefined) }} /> : <div className="account-grid">{accounts.filter((item) => item.companyId === selected.id).map((account) => <AccountCard key={account.id} account={account} onEdit={() => { setEditAccount(account); setAccountForm(true) }} />)}{!accounts.some((item) => item.companyId === selected.id) && <div className="empty-mini">尚未保存招聘官网账号</div>}</div>}
         </>}

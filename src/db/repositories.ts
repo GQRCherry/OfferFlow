@@ -224,3 +224,10 @@ export async function updateCompany(id: string, patch: Pick<Company, 'name' | 'w
   if (!company) throw new Error('公司不存在。')
   await db.companies.put({ ...company, ...patch, name: normalizeName(patch.name), websiteUrl: patch.websiteUrl || undefined, careerUrl: patch.careerUrl || undefined, notes: patch.notes || undefined, updatedAt: nowIso() })
 }
+
+export async function updateApplicationMeta(id: string, patch: Pick<Application, 'appliedAt' | 'applyChannel' | 'applyChannelText' | 'resumeVersion'>) {
+  const application = await db.applications.get(id)
+  if (!application) throw new Error('投递记录不存在。')
+  await assertCycleWritable(application.cycleId)
+  await db.applications.update(id, { ...patch, appliedAt: patch.appliedAt || undefined, applyChannelText: patch.applyChannelText || undefined, resumeVersion: patch.resumeVersion || undefined, updatedAt: nowIso() })
+}

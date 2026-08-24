@@ -5,7 +5,9 @@ import { settingsRepo } from '../db/repositories'
 import type { Theme } from '../types/domain'
 
 export function useAppData() {
-  const cycles = useLiveQuery(() => db.recruitmentCycles.orderBy('createdAt').reverse().toArray(), [], [])
+  const cycleQuery = useLiveQuery(() => db.recruitmentCycles.orderBy('createdAt').reverse().toArray())
+  const cycles = cycleQuery ?? []
+  const ready = cycleQuery !== undefined
   const companies = useLiveQuery(() => db.companies.orderBy('name').toArray(), [], [])
   const positions = useLiveQuery(() => db.positions.toArray(), [], [])
   const applications = useLiveQuery(() => db.applications.toArray(), [], [])
@@ -21,7 +23,7 @@ export function useAppData() {
   const cycleApplications = applications.filter((item) => item.cycleId === currentCycleId)
   const cycleEvents = events.filter((item) => item.cycleId === currentCycleId)
   const cycleInterviews = interviews.filter((item) => item.cycleId === currentCycleId)
-  return { cycles, companies, positions, applications, events, interviews, histories, accounts, providers, currentCycleId, currentCycle, cyclePositions, cycleApplications, cycleEvents, cycleInterviews }
+  return { ready, cycles, companies, positions, applications, events, interviews, histories, accounts, providers, currentCycleId, currentCycle, cyclePositions, cycleApplications, cycleEvents, cycleInterviews }
 }
 
 type AppData = ReturnType<typeof useAppData>

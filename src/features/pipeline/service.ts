@@ -86,11 +86,16 @@ export async function updateApplicationPipeline(applicationId: string, stages: P
     if (!application) throw new Error('投递记录不存在。')
     await assertCycleWritable(application.cycleId)
     const normalized = normalizePipeline(stages)
-    const currentStillExists = normalized.some((stage) => stage.id === application.currentStageId)
-    const nextCurrentId = currentStillExists ? application.currentStageId : normalized[0].id
+    const removed = application.pipeline.filter((stage) => !normalized.some((next) => next.id === stage.id))
+    if (removed.some((stage) => stage.id === application.currentStageId)) throw new Error('不能删除当前所在阶段。')
+    if (removed.length) {
+      const histories = await db.applicationStageHistory.where('applicationId').equals(applicationId).toArray()
+      const usedIds = new Set(histories.flatMap((history) => [history.fromStageId, history.toStageId].filter((value): value is string => !!value)))
+      if (removed.some((stage) => usedIds.has(stage.id))) throw new Error('已进入历史记录的阶段不能删除。')
+    }
     const inserted = normalized.filter((stage) => !application.pipeline.some((previous) => previous.id === stage.id))
     const timestamp = nowIso()
-    await db.applications.put({ ...application, pipeline: normalized, currentStageId: nextCurrentId, updatedAt: timestamp })
+    await db.applications.put({ ...application, pipeline: normalized, currentStageId: application.currentStageId, updatedAt: timestamp })
     if (inserted.length) {
       await db.applicationStageHistory.bulkAdd(
         inserted.map((stage) => ({

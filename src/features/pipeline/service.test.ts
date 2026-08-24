@@ -48,6 +48,19 @@ describe('招聘流程与不可变历史', () => {
     await expect(changeApplicationStage(application.id, application.pipeline[1].id)).rejects.toThrow('已归档')
   })
 
+
+  it('不能删除当前阶段或已写入历史的阶段', async () => {
+    const cycle = await createCycle({ name: '2027 春招', type: 'spring', startDate: '', endDate: '', notes: '' })
+    const company = await createCompany({ name: '星河科技', websiteUrl: '', careerUrl: '', notes: '' })
+    const position = await createPosition({ cycleId: cycle.id, companyId: company.id, title: '后端开发', locations: [] })
+    const application = await createApplication({ cycleId: cycle.id, positionId: position.id })
+    await expect(updateApplicationPipeline(application.id, application.pipeline.slice(1))).rejects.toThrow('当前所在阶段')
+    const next = application.pipeline[1]
+    await changeApplicationStage(application.id, next.id)
+    const latest = (await db.applications.get(application.id))!
+    await expect(updateApplicationPipeline(application.id, latest.pipeline.filter((stage) => stage.id !== application.pipeline[0].id))).rejects.toThrow('历史记录')
+  })
+
   it('复制流程只复制阶段定义并生成新 ID', () => {
     const original = createDefaultPipeline()
     const copied = copyPipeline(original)

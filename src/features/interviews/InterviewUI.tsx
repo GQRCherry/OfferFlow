@@ -6,10 +6,10 @@ import { currentStage } from '../../lib/utils'
 import type { Application, Interview } from '../../types/domain'
 import { saveInterview } from './service'
 
-export function InterviewModal({ open, onClose, application, edit }: { open: boolean; onClose: () => void; application: Application; edit?: Interview }) {
+export function InterviewModal({ open, onClose, application, edit, eventId, stageName }: { open: boolean; onClose: () => void; application: Application; edit?: Interview; eventId?: string; stageName?: string }) {
   const { cycleEvents, toast } = useApp()
   const stage = currentStage(application)
-  const [form, setForm] = useState({ eventId: edit?.eventId ?? '', stageId: edit?.stageId ?? stage?.id ?? '', stageName: edit?.stageNameSnapshot ?? stage?.name ?? '面试', interviewer: edit?.interviewer ?? '', durationMinutes: edit?.durationMinutes?.toString() ?? '', result: edit?.result ?? 'pending', notes: edit?.notes ?? '', reflection: edit?.reflection ?? '' })
+  const [form, setForm] = useState({ eventId: edit?.eventId ?? eventId ?? '', stageId: edit?.stageId ?? stage?.id ?? '', stageName: edit?.stageNameSnapshot ?? stageName ?? stage?.name ?? '面试', interviewer: edit?.interviewer ?? '', durationMinutes: edit?.durationMinutes?.toString() ?? '', result: edit?.result ?? 'pending', notes: edit?.notes ?? '', reflection: edit?.reflection ?? '' })
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     await saveInterview({ cycleId: application.cycleId, applicationId: application.id, eventId: form.eventId || undefined, stageId: form.stageId || undefined, stageNameSnapshot: form.stageName.trim() || '面试', interviewer: form.interviewer || undefined, durationMinutes: form.durationMinutes ? Number(form.durationMinutes) : undefined, result: form.result as Interview['result'], notes: form.notes || undefined, reflection: form.reflection || undefined }, edit)
