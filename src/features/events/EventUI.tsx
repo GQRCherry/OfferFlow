@@ -10,7 +10,7 @@ import type { RecruitmentEvent, RecruitmentEventType } from '../../types/domain'
 import { completeEvent, deleteEvent, saveEvent } from './service'
 import { MarkdownEditor, MarkdownView } from '../../components/Markdown'
 import { InterviewModal } from '../interviews/InterviewUI'
-import { safeExternalUrl } from '../../lib/utils'
+import { currentStage, safeExternalUrl } from '../../lib/utils'
 
 const typeOptions: Array<[RecruitmentEventType, string]> = [['assessment', '测评'], ['written_test', '笔试'], ['interview', '面试'], ['hr_interview', 'HR 面'], ['offer', 'Offer 沟通'], ['deadline', '截止时间'], ['follow_up', '跟进'], ['custom', '自定义']]
 export const eventTypeLabels = Object.fromEntries(typeOptions) as Record<RecruitmentEventType, string>
@@ -83,7 +83,7 @@ export function EventDetailModal({ event, onClose }: { event?: RecruitmentEvent;
       {event.notes && <div className="event-notes"><MarkdownView value={event.notes} /></div>}
       <div className="modal-actions"><Button disabled={readonly} variant="danger" onClick={async () => { if (confirm('确认删除这个日程？')) { await deleteEvent(event); toast('日程已删除'); onClose() } }}>删除</Button><Button disabled={readonly} variant="secondary" onClick={() => setEditing(true)}>编辑</Button>{application && <Button variant="secondary" onClick={() => { navigate(`/applications/${application.id}`); onClose() }}>进入投递</Button>}{application && ['interview', 'hr_interview'].includes(event.type) && <Button disabled={readonly} variant="secondary" onClick={() => setInterviewOpen(true)}>记录面经</Button>}{!event.completed && <Button disabled={readonly} onClick={async () => { await completeEvent(event); toast('已标记完成'); onClose() }}>标记完成</Button>}</div>
     </Modal>
-    {application && <InterviewModal open={interviewOpen} application={application} eventId={event.id} stageName={event.title} onClose={() => setInterviewOpen(false)} />}
+    {application && <InterviewModal open={interviewOpen} application={application} eventId={event.id} stageName={currentStage(application)?.name ?? event.title} onClose={() => setInterviewOpen(false)} />}
     <EventModal open={editing} onClose={() => { setEditing(false); onClose() }} edit={event} />
   </>
 }

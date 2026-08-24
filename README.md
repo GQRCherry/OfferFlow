@@ -26,7 +26,7 @@
 
 ## GitHub Pages 使用入口
 
-仓库启用 GitHub Pages，并将发布来源设置为 **GitHub Actions** 后，每次推送到 `main` 都会执行测试、构建并发布 `dist/`。
+仓库启用 GitHub Pages，并在 **Settings → Pages → Build and deployment → Source** 中选择 **GitHub Actions** 后，每次推送到 `main` 都会执行测试、构建并发布 `dist/`。请不要选择 `Deploy from a branch`，否则 GitHub 会直接发布仓库源码，Vite 页面无法正常运行。
 
 预期访问地址：
 
