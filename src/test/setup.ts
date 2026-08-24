@@ -13,3 +13,17 @@ class MemoryStorage implements Storage {
 
 Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: new MemoryStorage() })
 Object.defineProperty(globalThis, 'sessionStorage', { configurable: true, value: new MemoryStorage() })
+
+Object.defineProperty(window, 'matchMedia', {
+  configurable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    dispatchEvent: () => false,
+  }),
+})

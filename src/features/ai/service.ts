@@ -17,6 +17,22 @@ function extractJson(text: string): unknown {
   return JSON.parse(cleaned)
 }
 
+async function requestCompletion(endpoint: string, apiKey: string, provider: LLMProviderConfig, rawText: string, structuredOutput: boolean) {
+  return fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: provider.model,
+      temperature: 0.1,
+      ...(structuredOutput ? { response_format: { type: 'json_object' } } : {}),
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: rawText },
+      ],
+    }),
+  })
+}
+
 export async function parseJD(provider: LLMProviderConfig, rawText: string): Promise<StructuredJD> {
   const secret = await readLLMSecret(provider.id)
   if (!secret?.apiKey) throw new Error('尚未配置 API Key，请先前往设置。')
@@ -24,19 +40,10 @@ export async function parseJD(provider: LLMProviderConfig, rawText: string): Pro
   const endpoint = `${provider.baseUrl.replace(/\/$/, '')}/chat/completions`
   let response: Response
   try {
-    response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${secret.apiKey}` },
-      body: JSON.stringify({
-        model: provider.model,
-        temperature: 0.1,
-        response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: rawText },
-        ],
-      }),
-    })
+    response = await requestCompletion(endpoint, secret.apiKey, provider, rawText, true)
+    if ([400, 422].includes(response.status)) {
+      response = await requestCompletion(endpoint, secret.apiKey, provider, rawText, false)
+    }
   } catch {
     throw new Error('网络连接失败，请检查网络、Base URL 或浏览器跨域限制。')
   }

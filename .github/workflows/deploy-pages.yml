@@ -1,4 +1,4 @@
-name: Deploy GitHub Pages
+name: 发布 GitHub Pages
 
 on:
   push:
@@ -37,6 +37,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Deploy
+      - name: 发布页面
         id: deployment
         uses: actions/deploy-pages@v4

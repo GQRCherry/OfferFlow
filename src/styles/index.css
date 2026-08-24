@@ -473,3 +473,8 @@ td > span { margin-top: 3px; color: var(--muted); font-size: 11px; }
 .route-loading { min-height: 60vh; display: grid; place-content: center; justify-items: center; color: var(--muted); font-size: 12px; }
 .route-loading span { width: 25px; height: 25px; border: 2px solid var(--border-strong); border-top-color: var(--accent); border-radius: 99px; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.pagination, .load-more { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--border); color: var(--muted); font-size: 11px; }
+.pagination > div { display: flex; align-items: center; gap: 8px; }
+.load-more { margin-top: 12px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface); }
+.method-options { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }

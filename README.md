@@ -1,46 +1,51 @@
 # OfferFlow
 
-A local-first, single-user recruiting-season workspace for organizing positions, applications, custom pipelines, assessments, interviews, offers, schedules, notes, and recruiting-site credentials—without a backend.
+一个本地优先、单用户、开源的个人招聘季管理 Web 应用，用于集中维护岗位、投递、自定义流程、测评、笔试、面试、Offer、日程、面经和公司招聘官网登录信息。
 
-![OfferFlow dashboard](docs/screenshot-dashboard.jpg)
+![OfferFlow 总览页面](docs/screenshot-dashboard.jpg)
 
-## Features
+## 功能
 
-- Multiple recruitment cycles with archive/restore and strict Position/JD isolation
-- Company and cycle-scoped position library with raw and structured JD data
-- Application Kanban and sortable list using fixed statistical categories plus custom stages
-- Immutable stage/result history snapshots
-- Assessments, written tests, interviews, offer events, weekly focus, and monthly calendar
-- One interview note and reflection per interview session, with safe Markdown rendering
-- `Cmd/Ctrl + K` global search across ordinary current-cycle data
-- Recruitment-site credentials in a separate AES-GCM encrypted IndexedDB store
-- OpenAI-compatible JD parsing with an editable SiliconFlow preset
-- Normal JSON backup/restore and application CSV export
-- System, light, and dark themes
-- Hash-based routing suitable for GitHub Pages and other static hosts
+- 管理多个招聘季，支持切换、编辑、归档、恢复与删除
+- 公司可跨招聘季复用，岗位和 JD 严格按招聘季隔离
+- 保存 JD 原文，并维护可编辑的结构化 JD
+- 投递看板和列表视图，支持筛选、排序与分页
+- 每条投递拥有独立且可自定义的招聘流程
+- 流程阶段始终映射到固定统计大类，便于统一统计
+- 阶段和结果变更会生成不可被后续改名覆盖的历史快照
+- 管理测评、笔试、面试、Offer 沟通、截止时间等日程
+- 总览页面提供 KPI、本周事项、月历和停滞流程提醒
+- 每场面试独立保存面经与个人复盘
+- 支持安全净化后的 Markdown 编辑与预览
+- 使用 `Cmd/Ctrl + K` 搜索当前招聘季的普通业务数据
+- 公司招聘官网账号密码与普通数据分开存储，并使用 AES-GCM 加密
+- 通过兼容 OpenAI 接口的服务商提纯 JD，内置可编辑的 SiliconFlow 示例配置
+- 普通数据 JSON 备份与恢复、投递 CSV 导出
+- 跟随系统、浅色和深色三种主题
+- 使用 Hash Router，可直接部署到 GitHub Pages 等静态托管平台
 
-## Use on GitHub Pages
+## GitHub Pages 使用入口
 
-After GitHub Pages is enabled with **Source: GitHub Actions**, every push to `main` runs tests, builds the static app, and publishes `dist/` through `.github/workflows/deploy-pages.yml`.
+仓库启用 GitHub Pages，并将发布来源设置为 **GitHub Actions** 后，每次推送到 `main` 都会执行测试、构建并发布 `dist/`。
 
-The expected public URL is:
+预期访问地址：
 
 ```text
 https://gqrcherry.github.io/OfferFlow/
 ```
 
-No Node.js, Python, database service, Docker, or account registration is required to use the published page.
+访问已发布页面不需要安装 Node.js、Python、数据库、Docker，也不需要注册账号。
 
-## Local use
+## 本地运行
 
-### Development
+### 开发模式
 
 ```bash
 npm install
 npm run dev
 ```
 
-### Production build
+### 构建生产版本
 
 ```bash
 npm ci
@@ -48,111 +53,115 @@ npm test
 npm run build
 ```
 
-Serve the generated static directory:
+使用 Python 启动静态服务器：
 
 ```bash
 python -m http.server 8000 -d dist
 ```
 
-or:
+或使用 `serve`：
 
 ```bash
 npx serve dist
 ```
 
-Then open the displayed HTTP URL. Direct `file://` opening is not guaranteed because browsers restrict module loading, IndexedDB, and Web Crypto in local-file contexts.
+然后打开命令行显示的 HTTP 地址。由于浏览器对模块、IndexedDB 和 Web Crypto 的安全限制，不保证通过 `file://` 双击打开构建文件可以正常使用。
 
-## Where data is saved
+## 数据保存在哪里
 
-Ordinary business data is stored in the current browser's IndexedDB database named `offerflow`. Recruitment-site secrets and LLM API Keys use separate object stores; locally saved secret payloads are encrypted with AES-GCM using a browser-local random key.
+普通业务数据保存在当前浏览器的 IndexedDB 数据库 `offerflow` 中。
 
-There is no cloud sync. Different browsers, browser profiles, devices, origins, GitHub Pages domains, and private-browsing sessions have separate data.
+招聘官网账号密码与 LLM API Key 保存在独立的敏感数据表中。本地持久化的敏感信息使用 AES-GCM 加密，密钥由当前浏览器在本地产生。
 
-## Backups and browser cleanup risk
+OfferFlow 不提供云同步。因此，不同浏览器、浏览器用户目录、设备、网站域名和无痕会话中的数据彼此独立。
 
-Clearing site data, resetting a browser profile, uninstalling a browser, or changing the deployment origin can permanently remove local OfferFlow data. Use **Data → Export JSON** regularly and keep backups in a location you control.
+## 浏览器数据清理风险与备份
 
-- Normal JSON exports contain ordinary business data and non-sensitive settings.
-- Normal JSON and CSV exports do **not** contain recruitment-site passwords, account identifiers stored as secrets, LLM API Keys, or the local encryption key.
-- Import validates the schema and cross-entity references before writing data.
-- Full replacement is destructive and should only be used after exporting the current data.
+清除网站数据、重置浏览器用户目录、卸载浏览器或更换部署域名，都可能永久删除本地 OfferFlow 数据。建议定期进入 **数据 → 导出 JSON**，并把备份保存在自己控制的位置。
 
-## Recruitment-site credential security boundary
+- 普通 JSON 备份包含招聘季、公司、岗位、投递、流程历史、日程、面经和非敏感设置。
+- 普通 JSON 和 CSV 不包含招聘官网密码、敏感账号标识、LLM API Key 或本地加密密钥。
+- 导入会先校验 Schema 和实体引用关系，再写入数据库。
+- 全量替换会清空当前普通数据，执行前应先导出当前备份。
 
-OfferFlow is a local personal recruitment-management tool, not a professional password manager. In no-master-password mode, encryption mainly lowers plaintext exposure if ordinary application data leaks. If an attacker controls the current browser, OS account, browser extensions, or OfferFlow runtime, sensitive information cannot be guaranteed secure.
+## 招聘官网密码的安全边界
 
-## LLM API Key security
+OfferFlow 是本地个人招聘管理工具，不是专业密码管理器。
 
-Do not put a real user key in `.env`, `VITE_*`, source code, issues, or commits. Pure frontend build-time secrets are visible to users.
+无主密码模式主要用于降低普通数据泄露时的明文暴露风险。如果攻击者已经控制当前浏览器、操作系统账户、浏览器扩展或 OfferFlow 的执行环境，则无法保证敏感信息安全。
 
-Enter the API Key in **Settings → AI** and choose:
+## LLM API Key 安全说明
 
-- **Local sensitive store**: encrypted and persisted in the current browser; or
-- **Session only**: removed when the browser session ends.
+不要把真实用户密钥写入 `.env`、`VITE_*`、源代码、Issue 或 Git 提交。纯前端应用无法隐藏构建期密钥。
 
-OfferFlow sends only the current raw JD, and only after you explicitly click **AI 提纯**, to the configured third-party provider. Review that provider's privacy terms before use.
+请在 **设置 → AI · JD 提纯** 中填写 API Key，并选择：
 
-### SiliconFlow example
+- **加密保存到本地敏感数据区**：在当前浏览器中持久化；
+- **仅本次会话**：会话结束后失效。
 
-```text
-Provider: SiliconFlow
-Type: OpenAI-compatible
-Base URL: https://api.siliconflow.cn/v1
-Model: Qwen/Qwen3-8B (editable; use a model available to your account)
-```
+只有用户主动点击 **AI 提纯** 时，OfferFlow 才会把当前 JD 原文发送到配置的第三方模型服务。使用前请确认相应服务商的隐私政策。
 
-Provider model IDs can change. The model field is editable rather than embedded as an unchangeable business constant.
-
-### Custom OpenAI-compatible example
+### SiliconFlow 配置示例
 
 ```text
-Provider: My Provider
-Base URL: https://api.example.com/v1
-Model: my-json-capable-model
-API Key: entered in Settings
+服务商：SiliconFlow
+接口类型：兼容 OpenAI
+Base URL：https://api.siliconflow.cn/v1
+模型：Qwen/Qwen3-8B（可编辑，请以当前账号实际可用模型为准）
 ```
 
-The provider must expose compatible `/chat/completions` and `/models` endpoints and allow browser requests from the OfferFlow origin.
+模型 ID 可能随服务商调整，因此模型字段允许用户修改，不作为不可变的业务常量。
 
-## Privacy
+### 自定义兼容 OpenAI 的服务商
 
-- No analytics or telemetry
-- No account system
-- No backend or cloud database
-- No automatic scraping, login, or application submission
-- Global Search excludes passwords, API Keys, and raw JD text
-- Markdown is rendered with sanitization
-- External links use `noopener noreferrer`
-- Business data leaves the browser only when the user explicitly invokes a configured LLM for JD parsing
+```text
+服务商：我的模型服务
+Base URL：https://api.example.com/v1
+模型：my-json-capable-model
+API Key：在设置页面输入
+```
 
-## Project structure
+服务商需要提供兼容的 `/chat/completions` 和 `/models` 接口，并允许来自 OfferFlow 网站域名的浏览器跨域请求。
+
+## 隐私说明
+
+- 不接入分析或遥测服务
+- 不提供账号系统
+- 不依赖后端或云数据库
+- 不自动爬取岗位、登录招聘网站或自动投递
+- 全局搜索不索引密码、API Key 和 JD 原文
+- Markdown 渲染经过安全净化
+- 外部链接使用 `noopener noreferrer`
+- 除用户主动调用配置的 LLM 提纯 JD 外，业务数据不会离开浏览器
+
+## 项目结构
 
 ```text
 src/
-├── app/                 # routing, layout, providers, error boundary
-├── components/          # shared UI and safe Markdown
-├── db/                  # Dexie schema, migrations, repositories
-├── features/            # cycles, positions, applications, pipeline, events, interviews, AI, data, search, settings
-├── security/            # AES-GCM secret storage
-├── test/                # test setup and DB helpers
-└── types/               # domain types
+├── app/                 # 路由、布局、全局状态与错误边界
+├── components/          # 通用组件与安全 Markdown
+├── db/                  # Dexie Schema、迁移和 Repository
+├── features/            # 招聘季、岗位、投递、流程、日程、面经、AI、数据、搜索、设置
+├── security/            # AES-GCM 敏感数据存储
+├── test/                # 测试初始化与数据库工具
+└── types/               # 领域类型
 ```
 
-## Testing
+## 测试
 
 ```bash
 npm test
 npm run build
 ```
 
-Tests cover default/custom pipelines, immutable history snapshots, pipeline copy, StructuredJD validation, secret filtering, export/import round trips, cycle-scoped references, and search privacy boundaries.
+测试覆盖默认及自定义流程、历史快照、流程复制、结构化 JD 校验、敏感数据过滤、导入导出往返、招聘季隔离、搜索隐私边界和关键首次使用流程。
 
-## Contributing and security
+## 参与贡献与安全问题
 
-- [Contributing guide](CONTRIBUTING.md)
-- [Security policy](SECURITY.md)
-- [Product requirements](docs/Job-Hunt-PRD-v1.0.md)
+- [贡献指南](CONTRIBUTING.md)
+- [安全策略](SECURITY.md)
+- [产品需求文档](docs/Job-Hunt-PRD-v1.0.md)
 
-## License
+## 许可证
 
 [MIT](LICENSE)

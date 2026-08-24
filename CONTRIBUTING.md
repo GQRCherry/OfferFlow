@@ -1,31 +1,39 @@
-# Contributing to OfferFlow
+# 参与贡献
 
-Thanks for helping improve OfferFlow.
+感谢你帮助改进 OfferFlow。
 
-## Development
+## 开发方式
 
 ```bash
 npm install
 npm run dev
 ```
 
-Before opening a pull request:
+提交 Pull Request 前请运行：
 
 ```bash
 npm test
 npm run build
 ```
 
-## Product constraints
+## 必须遵守的产品边界
 
-Changes must preserve these boundaries:
+1. 保持本地优先，不加入后端数据库、登录系统、遥测或静默上传业务数据的能力。
+2. 招聘季是一级作用域，岗位和 JD 不得跨招聘季复用。
+3. 每条投递的具体流程可以自定义，但每个阶段必须映射到固定统计大类。
+4. 流程历史必须保存不可变的阶段名称与大类快照。
+5. 敏感数据不得进入普通导出、全局搜索、URL 或日志。
+6. 只有用户主动操作时才能调用 LLM，并通过兼容 OpenAI 的抽象实现。
+7. 破坏性操作必须明确确认或提供恢复机制。
 
-1. Local-first: no backend database, login system, telemetry, or silent business-data upload.
-2. RecruitmentCycle is the primary scope; Position and JD never cross cycles.
-3. Application Pipeline stages are customizable but always map to a fixed PipelineCategory.
-4. Pipeline History stores immutable name/category snapshots.
-5. Secrets never enter normal export, global search, URLs, or logs.
-6. LLM calls happen only after an explicit user action and use an OpenAI-compatible abstraction.
-7. Destructive actions require a clear confirmation or recovery path.
+涉及数据模型、迁移、隐私、导入导出和招聘流程的修改，应同时补充测试。
 
-Please include tests for data model, migration, privacy, export/import, and workflow changes.
+## 提交信息
+
+本仓库面向中文用户，提交信息优先使用简洁中文，例如：
+
+```text
+新增投递看板筛选与分页
+修复归档招聘季仍可编辑的问题
+完善敏感数据导出测试
+```

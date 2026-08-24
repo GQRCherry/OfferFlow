@@ -2,9 +2,9 @@ import { useState, type FormEvent } from 'react'
 import { useApp } from '../../app/AppContext'
 import { Button, Field, Input, Modal, Select } from '../../components/ui'
 import { MarkdownEditor } from '../../components/Markdown'
-import { db } from '../../db/schema'
-import { currentStage, nowIso, uid } from '../../lib/utils'
+import { currentStage } from '../../lib/utils'
 import type { Application, Interview } from '../../types/domain'
+import { saveInterview } from './service'
 
 export function InterviewModal({ open, onClose, application, edit }: { open: boolean; onClose: () => void; application: Application; edit?: Interview }) {
   const { cycleEvents, toast } = useApp()
@@ -12,8 +12,7 @@ export function InterviewModal({ open, onClose, application, edit }: { open: boo
   const [form, setForm] = useState({ eventId: edit?.eventId ?? '', stageId: edit?.stageId ?? stage?.id ?? '', stageName: edit?.stageNameSnapshot ?? stage?.name ?? '面试', interviewer: edit?.interviewer ?? '', durationMinutes: edit?.durationMinutes?.toString() ?? '', result: edit?.result ?? 'pending', notes: edit?.notes ?? '', reflection: edit?.reflection ?? '' })
   const submit = async (event: FormEvent) => {
     event.preventDefault()
-    const timestamp = nowIso()
-    await db.interviews.put({ id: edit?.id ?? uid(), cycleId: application.cycleId, applicationId: application.id, eventId: form.eventId || undefined, stageId: form.stageId || undefined, stageNameSnapshot: form.stageName.trim() || '面试', interviewer: form.interviewer || undefined, durationMinutes: form.durationMinutes ? Number(form.durationMinutes) : undefined, result: form.result as Interview['result'], notes: form.notes || undefined, reflection: form.reflection || undefined, createdAt: edit?.createdAt ?? timestamp, updatedAt: timestamp })
+    await saveInterview({ cycleId: application.cycleId, applicationId: application.id, eventId: form.eventId || undefined, stageId: form.stageId || undefined, stageNameSnapshot: form.stageName.trim() || '面试', interviewer: form.interviewer || undefined, durationMinutes: form.durationMinutes ? Number(form.durationMinutes) : undefined, result: form.result as Interview['result'], notes: form.notes || undefined, reflection: form.reflection || undefined }, edit)
     toast(edit ? '面经已更新' : '面经已记录')
     onClose()
   }

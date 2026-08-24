@@ -31,7 +31,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
   return <div className="app-shell">
     <aside className={`sidebar ${mobileNav ? 'sidebar-open' : ''}`}>
-      <div className="brand"><div className="brand-mark"><span>O</span></div><div><strong>OfferFlow</strong><small>Job hunt, in order.</small></div></div>
+      <div className="brand"><div className="brand-mark"><span>O</span></div><div><strong>OfferFlow</strong><small>求职进度，井然有序。</small></div></div>
       <button className="cycle-switcher" onClick={() => setCycleOpen(true)}><CalendarDays size={17} /><span><small>当前招聘季</small><strong>{currentCycle?.name ?? '未选择'}</strong></span><ChevronDown size={16} /></button>
       <nav>{nav.map(({ to, label, icon: Icon }) => <NavLink key={to} to={to} onClick={() => setMobileNav(false)} className={({ isActive }) => isActive ? 'active' : ''}><Icon size={18} /><span>{label}</span></NavLink>)}</nav>
       <div className="sidebar-bottom"><button className="search-trigger" onClick={() => setSearchOpen(true)}><Search size={17} /><span>全局搜索</span><kbd>⌘ K</kbd></button><p>数据仅保存在此浏览器</p></div>

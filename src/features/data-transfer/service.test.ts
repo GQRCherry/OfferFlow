@@ -6,10 +6,10 @@ import { saveCareerAccountSecret, saveLLMSecret } from '../../security/secrets'
 import { createExportBundle, importBundle, parseImportBundle } from './service'
 import { nowIso } from '../../lib/utils'
 
-describe('data export and import', () => {
+describe('数据导出与导入', () => {
   beforeEach(resetDatabase)
 
-  it('never includes career account secrets or LLM API keys in normal export', async () => {
+  it('普通导出绝不包含招聘账号 Secret 或 LLM API Key', async () => {
     const cycle = await createCycle({ name: '2027 春招', type: 'spring', startDate: '', endDate: '', notes: '' })
     const company = await createCompany({ name: '星河科技', websiteUrl: '', careerUrl: '', notes: '' })
     const timestamp = nowIso()
@@ -26,7 +26,7 @@ describe('data export and import', () => {
     expect(serialized).not.toContain('apiKeyRef')
   })
 
-  it('round-trips ordinary data with references intact', async () => {
+  it('普通数据往返导入后保持实体引用完整', async () => {
     const cycle = await createCycle({ name: '2027 春招', type: 'spring', startDate: '', endDate: '', notes: '' })
     const company = await createCompany({ name: '星河科技', websiteUrl: '', careerUrl: '', notes: '' })
     const position = await createPosition({ cycleId: cycle.id, companyId: company.id, title: '后端开发', locations: ['上海'] })

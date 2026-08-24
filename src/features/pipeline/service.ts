@@ -1,4 +1,5 @@
 import { db } from '../../db/schema'
+import { assertCycleWritable } from '../../db/repositories'
 import { nowIso, uid } from '../../lib/utils'
 import type { Application, ApplicationResult, ApplicationStageHistory, PipelineStage } from '../../types/domain'
 
@@ -35,9 +36,10 @@ export function createStageHistory(
 }
 
 export async function changeApplicationStage(applicationId: string, nextStageId: string, note?: string) {
-  await db.transaction('rw', db.applications, db.applicationStageHistory, async () => {
+  await db.transaction('rw', db.applications, db.applicationStageHistory, db.recruitmentCycles, async () => {
     const application = await db.applications.get(applicationId)
     if (!application) throw new Error('投递记录不存在。')
+    await assertCycleWritable(application.cycleId)
     if (application.result !== 'active') throw new Error('已结束的投递需要先恢复为进行中。')
     const nextStage = application.pipeline.find((stage) => stage.id === nextStageId)
     if (!nextStage) throw new Error('目标流程阶段不存在。')
@@ -50,9 +52,10 @@ export async function changeApplicationStage(applicationId: string, nextStageId:
 }
 
 export async function changeApplicationResult(applicationId: string, result: ApplicationResult, note?: string) {
-  await db.transaction('rw', db.applications, db.applicationStageHistory, async () => {
+  await db.transaction('rw', db.applications, db.applicationStageHistory, db.recruitmentCycles, async () => {
     const application = await db.applications.get(applicationId)
     if (!application) throw new Error('投递记录不存在。')
+    await assertCycleWritable(application.cycleId)
     if (application.result === result) return
     const timestamp = nowIso()
     const current = application.pipeline.find((stage) => stage.id === application.currentStageId)
@@ -78,9 +81,10 @@ export async function changeApplicationResult(applicationId: string, result: App
 
 export async function updateApplicationPipeline(applicationId: string, stages: PipelineStage[]) {
   if (!stages.length) throw new Error('投递流程至少需要一个阶段。')
-  await db.transaction('rw', db.applications, db.applicationStageHistory, async () => {
+  await db.transaction('rw', db.applications, db.applicationStageHistory, db.recruitmentCycles, async () => {
     const application = await db.applications.get(applicationId)
     if (!application) throw new Error('投递记录不存在。')
+    await assertCycleWritable(application.cycleId)
     const normalized = normalizePipeline(stages)
     const currentStillExists = normalized.some((stage) => stage.id === application.currentStageId)
     const nextCurrentId = currentStillExists ? application.currentStageId : normalized[0].id

@@ -1,16 +1,25 @@
-# Security Policy
+# 安全策略
 
-## Data and credential safety
+## 数据与凭据安全
 
-- Never commit a real LLM API Key, recruitment-site password, exported backup, or other personal recruiting information.
-- Do not upload a complete OfferFlow backup to a public issue. Create a sanitized reproduction instead.
-- Normal JSON and CSV exports deliberately exclude recruitment-site secrets and LLM API Keys.
-- Markdown rendering is sanitized, but imported files should still be treated as untrusted until validation succeeds.
+- 不要提交真实的 LLM API Key、招聘网站密码、完整备份或其他个人招聘信息。
+- 不要在公开 Issue 中上传完整 OfferFlow 备份；请使用脱敏后的最小复现数据。
+- 普通 JSON 和 CSV 导出会排除招聘官网敏感信息和 LLM API Key。
+- Markdown 已进行安全净化，但导入文件在校验完成前仍应视为不可信数据。
 
-## Password feature boundary
+## 密码功能的安全边界
 
-OfferFlow is a local personal recruitment-management tool, not a professional password manager. In no-master-password mode, Web Crypto encryption mainly reduces plaintext exposure when ordinary application data leaks. It cannot protect secrets if an attacker controls the current browser, operating-system account, extension environment, or OfferFlow's runtime.
+OfferFlow 是本地个人招聘管理工具，不是专业密码管理器。
 
-## Reporting a vulnerability
+无主密码模式主要用于降低普通数据泄露时的明文暴露风险。如果攻击者已经控制当前浏览器、操作系统账户、浏览器扩展或 OfferFlow 执行环境，则无法保证敏感信息安全。
 
-Please report security vulnerabilities privately to the repository owner instead of opening a public issue. Include a concise reproduction, affected version/commit, expected impact, and a sanitized proof of concept. Do not include real personal data or credentials.
+## 报告安全漏洞
+
+请私下联系仓库所有者，不要直接创建公开安全 Issue。报告中建议包含：
+
+- 简洁的复现步骤；
+- 受影响的版本或提交；
+- 可能造成的影响；
+- 已脱敏的概念验证。
+
+不要在漏洞报告中提供真实个人数据或凭据。

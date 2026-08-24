@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createApplication, createCompany, createCycle, createPosition } from '../../db/repositories'
+import { archiveCycle, createApplication, createCompany, createCycle, createPosition } from '../../db/repositories'
 import { db } from '../../db/schema'
 import { createDefaultPipeline } from '../../lib/constants'
 import { resetDatabase } from '../../test/db'
 import { changeApplicationStage, copyPipeline, updateApplicationPipeline } from './service'
 
-describe('pipeline and immutable history', () => {
+describe('招聘流程与不可变历史', () => {
   beforeEach(resetDatabase)
 
-  it('creates an application with default pipeline and created history', async () => {
+  it('创建投递时生成默认流程和创建历史', async () => {
     const cycle = await createCycle({ name: '2027 春招', type: 'spring', startDate: '', endDate: '', notes: '' })
     const company = await createCompany({ name: '星河科技', websiteUrl: '', careerUrl: '', notes: '' })
     const position = await createPosition({ cycleId: cycle.id, companyId: company.id, title: '后端开发', locations: ['上海'] })
@@ -21,7 +21,7 @@ describe('pipeline and immutable history', () => {
     expect(history[0]).toMatchObject({ action: 'created', toStageNameSnapshot: '待投递', toCategorySnapshot: 'todo' })
   })
 
-  it('keeps history snapshots unchanged after a stage is renamed and a new stage is inserted', async () => {
+  it('阶段改名和插入新阶段不会改变既有历史快照', async () => {
     const cycle = await createCycle({ name: '2027 春招', type: 'spring', startDate: '', endDate: '', notes: '' })
     const company = await createCompany({ name: '星河科技', websiteUrl: '', careerUrl: '', notes: '' })
     const position = await createPosition({ cycleId: cycle.id, companyId: company.id, title: '后端开发', locations: [] })
@@ -38,7 +38,17 @@ describe('pipeline and immutable history', () => {
     expect(history.some((item) => item.action === 'stage_inserted' && item.toStageNameSnapshot === '主管面')).toBe(true)
   })
 
-  it('copies stage definitions with new IDs only', () => {
+
+  it('归档招聘季禁止继续推进投递流程', async () => {
+    const cycle = await createCycle({ name: '2027 春招', type: 'spring', startDate: '', endDate: '', notes: '' })
+    const company = await createCompany({ name: '星河科技', websiteUrl: '', careerUrl: '', notes: '' })
+    const position = await createPosition({ cycleId: cycle.id, companyId: company.id, title: '后端开发', locations: [] })
+    const application = await createApplication({ cycleId: cycle.id, positionId: position.id })
+    await archiveCycle(cycle.id)
+    await expect(changeApplicationStage(application.id, application.pipeline[1].id)).rejects.toThrow('已归档')
+  })
+
+  it('复制流程只复制阶段定义并生成新 ID', () => {
     const original = createDefaultPipeline()
     const copied = copyPipeline(original)
     expect(copied.map((stage) => stage.name)).toEqual(original.map((stage) => stage.name))

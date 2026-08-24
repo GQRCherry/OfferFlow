@@ -43,6 +43,16 @@ export function positionForApplication(application: Application, positions: Posi
   return positions.find((position) => position.id === application.positionId)
 }
 
+
+export function findSimilarCompanyNames(name: string, existingNames: string[]): string[] {
+  const normalized = normalizeName(name).toLocaleLowerCase().replace(/[\s·•・._-]/g, '')
+  if (!normalized) return []
+  return existingNames.filter((candidate) => {
+    const value = normalizeName(candidate).toLocaleLowerCase().replace(/[\s·•・._-]/g, '')
+    return value === normalized || (Math.min(value.length, normalized.length) >= 3 && (value.includes(normalized) || normalized.includes(value)))
+  })
+}
+
 export function safeExternalUrl(value?: string): string | undefined {
   if (!value) return undefined
   try {
@@ -51,6 +61,34 @@ export function safeExternalUrl(value?: string): string | undefined {
   } catch {
     return undefined
   }
+}
+
+
+export async function copyText(text: string) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text)
+    return
+  }
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.select()
+  const copied = document.execCommand('copy')
+  textarea.remove()
+  if (!copied) throw new Error('当前浏览器不支持自动复制，请手动复制。')
+}
+
+export function maskSensitiveValue(value: string | undefined, kind: 'phone' | 'email' | 'username') {
+  if (!value) return '未填写'
+  if (kind === 'phone' && value.length >= 7) return `${value.slice(0, 3)}****${value.slice(-4)}`
+  if (kind === 'email') {
+    const [name, domain] = value.split('@')
+    if (!domain) return `${value.slice(0, 2)}***`
+    return `${name.slice(0, 2)}***@${domain}`
+  }
+  return value.length <= 2 ? `${value[0] ?? ''}*` : `${value.slice(0, 2)}***${value.slice(-1)}`
 }
 
 export function downloadBlob(content: BlobPart, filename: string, type: string) {
